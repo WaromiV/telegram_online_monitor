@@ -2,7 +2,7 @@ pipeline {
     agent any
     options {
         timestamps()
-        ansiColor('xterm')
+        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm'])
     }
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
