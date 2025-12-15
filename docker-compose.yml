@@ -1,0 +1,40 @@
+services:
+  collector:
+    build: .
+    command: python -m unhinged_spyware.collector
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      DB_PATH: /app/data/presence.db
+    volumes:
+      - ./data:/app/data
+
+  aggregator:
+    build: .
+    command: /app/scripts/run_aggregator_loop.sh
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      DB_PATH: /app/data/presence.db
+      AGGREGATE_INTERVAL_SECONDS: 600
+    depends_on:
+      - collector
+    volumes:
+      - ./data:/app/data
+
+  api:
+    build: .
+    command: python -m unhinged_spyware.api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      DB_PATH: /app/data/presence.db
+    depends_on:
+      - collector
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8000:8000"

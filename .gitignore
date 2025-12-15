@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.session
+data/
+
+# Virtual env
+.venv/
+
+# Environment files
+.env
+.env.local
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# Editors
+.vscode/
+.idea/
+.DS_Store

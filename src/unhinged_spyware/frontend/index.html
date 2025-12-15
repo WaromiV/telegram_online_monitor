@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presence Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070d1c;
+      --bg-soft: #0c1326;
+      --panel: rgba(255, 255, 255, 0.04);
+      --panel-strong: rgba(255, 255, 255, 0.08);
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --accent: #a855f7;
+      --accent-2: #22d3ee;
+      --success: #34d399;
+      --warning: #fbbf24;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(120% 120% at 10% 10%, rgba(34, 211, 238, 0.14), transparent),
+                  radial-gradient(110% 110% at 80% 0%, rgba(168, 85, 247, 0.16), transparent),
+                  linear-gradient(145deg, #050915 0%, #0b142a 55%, #070d1c 100%);
+      color: var(--text);
+      font-family: 'Space Grotesk', 'IBM Plex Mono', system-ui, sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+
+    p { margin: 0; }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pill {
+      background: var(--panel-strong);
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    select, button {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--bg-soft);
+      color: var(--text);
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    button {
+      background: linear-gradient(120deg, var(--accent) 0%, var(--accent-2) 100%);
+      border: none;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    button:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(34, 211, 238, 0.24); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric .label { color: var(--muted); font-size: 13px; }
+    .metric .value { font-size: 22px; font-weight: 700; }
+    .metric .sub { color: var(--muted); font-size: 12px; }
+
+    .sections {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeline-bar {
+      display: flex;
+      width: 100%;
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .segment {
+      height: 100%;
+      transition: opacity 120ms ease;
+    }
+
+    .segment:hover { opacity: 0.9; }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item { display: flex; gap: 6px; align-items: center; }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 1.6fr 1.6fr 0.8fr 0.6fr;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .badge.online { background: rgba(52, 211, 153, 0.18); color: #34d399; }
+    .badge.offline { background: rgba(148, 163, 184, 0.16); color: #cbd5e1; }
+    .badge.unknown { background: rgba(248, 180, 0, 0.16); color: #fbbf24; }
+
+    .muted { color: var(--muted); }
+    .tiny { font-size: 12px; }
+
+    .sleep-list { display: flex; flex-direction: column; gap: 8px; }
+    .sleep-card {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 13px;
+    }
+
+    .tag {
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .loading {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.6); }
+      70% { transform: scale(1.4); box-shadow: 0 0 0 14px rgba(34, 211, 238, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+    }
+
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .sections { grid-template-columns: 1fr; }
+      .event-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .controls { width: 100%; }
+      .controls select, .controls button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    import React from "https://esm.sh/react@18.2.0";
+    import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
+    import htm from "https://esm.sh/htm@3.1.1";
+
+    const html = htm.bind(React.createElement);
+
+    const statusPalette = {
+      online: "#34d399",
+      offline: "#0f172a",
+      unknown: "#fbbf24"
+    };
+
+    const fmtLocal = (iso, tz, withDate = true) => {
+      if (!iso) return "-";
+      const opts = { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz };
+      if (withDate) { opts.month = "short"; opts.day = "2-digit"; }
+      return new Intl.DateTimeFormat("en-US", opts).format(new Date(iso));
+    };
+
+    const fmtAgo = (iso) => {
+      if (!iso) return "never";
+      const delta = Date.now() - new Date(iso).getTime();
+      if (delta < 0) return "just now";
+      const mins = Math.floor(delta / 60000);
+      if (mins < 1) return "moments ago";
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    };
+
+    const durationText = (ms) => {
+      const totalMinutes = Math.floor(ms / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (hours && minutes) return `${hours}h ${minutes}m`;
+      if (hours) return `${hours}h`;
+      return `${minutes}m`;
+    };
+
+    const normalizePresence = (events, options = {}) => {
+      const tailMinutes = options.tailMinutes ?? 30;
+      const minSegmentMinutes = options.minSegmentMinutes ?? 2;
+      const sorted = [...events].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      if (!sorted.length) return { segments: [], last: null, reduced: 0 };
+
+      const dedup = [];
+      for (const ev of sorted) {
+        const status = ev.normalizedStatus || "unknown";
+        if (!dedup.length || dedup[dedup.length - 1].normalizedStatus !== status) {
+          dedup.push({ ...ev, normalizedStatus: status });
+        }
+      }
+
+      const tailMs = tailMinutes * 60000;
+      const minSegMs = minSegmentMinutes * 60000;
+      const segments = dedup.map((ev, idx) => {
+        const start = new Date(ev.timestamp);
+        const assumedEnd = new Date(Math.min(Date.now(), start.getTime() + tailMs));
+        const end = idx < dedup.length - 1 ? new Date(dedup[idx + 1].timestamp) : assumedEnd;
+        return {
+          start,
+          end: end > start ? end : start,
+          status: ev.normalizedStatus,
+          raw: ev.rawStatus,
+          assumed: idx === dedup.length - 1
+        };
+      });
+
+      const smoothed = [];
+      let reduced = 0;
+      for (let i = 0; i < segments.length; i++) {
+        const seg = { ...segments[i] };
+        const prev = smoothed[smoothed.length - 1];
+        const next = segments[i + 1];
+        const duration = seg.end.getTime() - seg.start.getTime();
+
+        if (duration < minSegMs && prev && next && prev.status === next.status) {
+          prev.end = next.end;
+          reduced += 1;
+          i += 1;
+          continue;
+        }
+
+        if (duration < minSegMs && prev && prev.status === seg.status) {
+          prev.end = seg.end;
+          reduced += 1;
+          continue;
+        }
+
+        smoothed.push(seg);
+      }
+
+      return { segments: smoothed, last: dedup[dedup.length - 1], reduced };
+    };
+
+    const clipSegments = (segments, startMs, endMs) => {
+      return segments
+        .map((seg) => {
+          const start = Math.max(seg.start.getTime(), startMs);
+          const end = Math.min(seg.end.getTime(), endMs);
+          if (end <= start) return null;
+          return { ...seg, start: new Date(start), end: new Date(end) };
+        })
+        .filter(Boolean);
+    };
+
+    const Timeline = ({ segments, tz, rangeStart, rangeEnd }) => {
+      const total = rangeEnd - rangeStart;
+      if (!segments.length) {
+        return html`<div className="muted tiny">No activity in the selected window.</div>`;
+      }
+
+      return html`
+        <div className="timeline">
+          <div className="timeline-bar">
+            ${segments.map((seg, idx) => {
+              const width = Math.max(((seg.end - seg.start) / total) * 100, 0.8);
+              const label = `${seg.status.toUpperCase()} | ${fmtLocal(seg.start.toISOString(), tz, true)} -> ${fmtLocal(seg.end.toISOString(), tz, true)} (${durationText(seg.end - seg.start)})`;
+              return html`<div
+                key=${idx}
+                className="segment"
+                style=${{ width: `${width}%`, background: statusPalette[seg.status] || "#64748b" }}
+                title=${label}
+              ></div>`;
+            })}
+          </div>
+          <div className="legend">
+            <div className="legend-item"><span className="dot" style=${{ background: statusPalette.online }}></span>online</div>
+            <div className="legend-item"><span className="dot" style=${{ background: statusPalette.offline }}></span>offline</div>
+            <div className="legend-item"><span className="dot" style=${{ background: statusPalette.unknown }}></span>unknown/noise</div>
+            <div className="legend-item muted">${fmtLocal(new Date(rangeStart).toISOString(), tz)} -> ${fmtLocal(new Date(rangeEnd).toISOString(), tz)}</div>
+          </div>
+        </div>
+      `;
+    };
+
+    const EventList = ({ segments, tz, limit = 12 }) => {
+      if (!segments.length) return html`<div className="muted tiny">No normalized events yet.</div>`;
+      const trimmed = [...segments]
+        .sort((a, b) => b.start - a.start)
+        .slice(0, limit);
+
+      return html`
+        <div className="event-list">
+          <div className="event-row muted tiny" style=${{ textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <span>Start</span><span>End</span><span>Status</span><span>Duration</span>
+          </div>
+          ${trimmed.map((seg, idx) => html`
+            <div key=${idx} className="event-row">
+              <div>${fmtLocal(seg.start.toISOString(), tz, true)}</div>
+              <div>${fmtLocal(seg.end.toISOString(), tz, true)}</div>
+              <div><span className=${`badge ${seg.status}`}>${seg.status}</span></div>
+              <div>${durationText(seg.end - seg.start)}</div>
+            </div>
+          `)}
+        </div>
+      `;
+    };
+
+    const SleepPanel = ({ sleep, tz }) => {
+      if (!sleep) return html`<div className="muted tiny">No sleep data yet.</div>`;
+      const latest = sleep.windows?.length ? sleep.windows[sleep.windows.length - 1] : null;
+      const doomscrolls = (sleep.anomalies || []).filter((a) => a.type === "doomscroll");
+
+      return html`
+        <div className="sleep-list">
+          ${latest ? html`
+            <div className="sleep-card">
+              <div className="muted tiny">Latest sleep window</div>
+              <div style=${{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
+                <div>
+                  <div>${fmtLocal(latest.start, tz, true)} -> ${fmtLocal(latest.end, tz, true)}</div>
+                  <div className="muted tiny">${latest.durationMinutes} min | confidence ${(latest.confidence * 100).toFixed(0)}%</div>
+                </div>
+                <span className="tag">sleep</span>
+              </div>
+            </div>
+          ` : html`<div className="muted tiny">No inferred sleep windows yet.</div>`}
+
+          ${doomscrolls.length ? doomscrolls.map((a, idx) => html`
+            <div key=${idx} className="sleep-card">
+              <div className="muted tiny">Night interruption</div>
+              <div style=${{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
+                <div>
+                  <div>${fmtLocal(a.timestamp, tz, true)}</div>
+                  <div className="muted tiny">online burst: ${a.metadata?.online_duration_minutes ?? "?"}m / return-to-sleep: ${a.metadata?.return_to_sleep ? "yes" : "?"}</div>
+                </div>
+                <span className="tag">doomscroll</span>
+              </div>
+            </div>
+          `) : html``}
+        </div>
+      `;
+    };
+
+    const App = () => {
+      const [users, setUsers] = React.useState([]);
+      const [selected, setSelected] = React.useState(null);
+      const [presence, setPresence] = React.useState([]);
+      const [sleep, setSleep] = React.useState(null);
+      const [loading, setLoading] = React.useState(false);
+      const [error, setError] = React.useState("");
+      const [lastLoaded, setLastLoaded] = React.useState(null);
+      const [devMode, setDevMode] = React.useState(false);
+
+      React.useEffect(() => {
+        const loadUsers = async () => {
+          try {
+            const res = await fetch("/users");
+            const data = await res.json();
+            setUsers(data);
+            if (data.length) setSelected(data[0].user_id);
+          } catch (err) {
+            setError("Failed to load users");
+          }
+        };
+        loadUsers();
+      }, []);
+
+      React.useEffect(() => {
+        const loadData = async () => {
+          if (!selected) return;
+          setLoading(true);
+          setError("");
+          try {
+            const [presenceRes, sleepRes] = await Promise.all([
+              fetch(`/users/${selected}/presence?limit=2000`),
+              fetch(`/users/${selected}/sleep`)
+            ]);
+            if (!presenceRes.ok || !sleepRes.ok) throw new Error("API error");
+            setPresence(await presenceRes.json());
+            setSleep(await sleepRes.json());
+            setLastLoaded(new Date().toISOString());
+          } catch (err) {
+            setError("Failed to load activity");
+          } finally {
+            setLoading(false);
+          }
+        };
+        loadData();
+      }, [selected]);
+
+      const tz = users.find((u) => u.user_id === selected)?.timezone || "UTC";
+      const normalized = React.useMemo(() => normalizePresence(presence, { minSegmentMinutes: 2, tailMinutes: 40 }), [presence]);
+      const now = Date.now();
+      const windowStart = now - 24 * 60 * 60 * 1000;
+      const clipped = React.useMemo(() => clipSegments(normalized.segments, windowStart, now), [normalized, windowStart, now]);
+      const onlineMs = clipped.filter((s) => s.status === "online").reduce((acc, seg) => acc + (seg.end - seg.start), 0);
+      const windowMs = now - windowStart;
+      const onlinePct = windowMs ? Math.round((onlineMs / windowMs) * 100) : 0;
+
+      const selectedUser = users.find((u) => u.user_id === selected);
+      const displayName = selectedUser?.full_name || selectedUser?.username || (selected ? `User #${selected}` : "User");
+      const handle = selectedUser?.username ? `@${selectedUser.username}` : selected ? `id ${selected}` : "";
+      const lastEvent = normalized.last;
+      const activityScore = clipped.length ? `${onlinePct}% online past 24h` : "No data in the last day";
+
+      return html`
+        <div className="page">
+          <div className="header">
+            <div className="title">
+              <div>
+                <div className="pill">Telemetry, but tasteful</div>
+                <h1>Per-user activity monitor</h1>
+                <p className="muted tiny">Presence gets smoothed (blips &lt;2m merged) and truncated tails so you can see real behavior instead of noise.</p>
+                <p className="muted tiny" style=${{ marginTop: "6px" }}>
+                  ${displayName}${handle ? ` · ${handle}` : ""}
+                </p>
+              </div>
+            </div>
+            <div className="controls">
+              <select value=${selected || ""} onChange=${(e) => setSelected(Number(e.target.value))}>
+                ${users.map((u) => {
+                  const name = u.full_name || u.username || `User #${u.user_id}`;
+                  const tag = u.username ? `@${u.username}` : `id ${u.user_id}`;
+                  return html`<option key=${u.user_id} value=${u.user_id}>${name} (${tag})</option>`;
+                })}
+              </select>
+              <button onClick=${() => setSelected((id) => id)} disabled=${loading || !selected}>${loading ? "Refreshing..." : "Refresh"}</button>
+              <button
+                onClick=${() => setDevMode((v) => !v)}
+                style=${{
+                  background: devMode ? "var(--panel-strong)" : "linear-gradient(120deg, var(--accent) 0%, var(--accent-2) 100%)",
+                  color: devMode ? "var(--text)" : "#0f172a",
+                  border: devMode ? "1px solid rgba(255,255,255,0.2)" : "none"
+                }}
+              >${devMode ? "Hide dev" : "Dev mode"}</button>
+            </div>
+          </div>
+
+          ${error && html`<div className="panel" style=${{ borderColor: "rgba(248, 113, 113, 0.4)" }}>${error}</div>`}
+
+          <div className="grid">
+            <div className="panel metric">
+              <div className="label">Latest status (${tz})</div>
+              <div className="value">${lastEvent ? lastEvent.normalizedStatus.toUpperCase() : "-"}</div>
+              <div className="sub">${lastEvent ? fmtLocal(lastEvent.timestamp, tz, true) : "No events yet"} | ${fmtAgo(lastEvent?.timestamp)}</div>
+            </div>
+            <div className="panel metric">
+              <div className="label">Activity density</div>
+              <div className="value">${activityScore}</div>
+              <div className="sub">${clipped.length} normalized segments in the last 24h (from ${presence.length} raw events; ${normalized.reduced} blips merged)</div>
+            </div>
+            <div className="panel metric">
+              <div className="label">Time zone</div>
+              <div className="value">${tz}</div>
+              <div className="sub">Data refreshed ${lastLoaded ? fmtAgo(lastLoaded) : "-"}</div>
+            </div>
+          </div>
+
+          <div className="sections">
+            <div className="panel">
+              <h2>Normalized timeline (24h)</h2>
+              ${loading ? html`<div className="loading"><span className="pulse"></span>Loading presence...</div>` : html`
+                <${Timeline} segments=${clipped} tz=${tz} rangeStart=${windowStart} rangeEnd=${now} />
+              `}
+            </div>
+            <div className="panel">
+              <h2>Sleep & anomalies</h2>
+              <${SleepPanel} sleep=${sleep} tz=${tz} />
+            </div>
+          </div>
+
+          <div className="panel" style=${{ marginTop: "12px" }}>
+            <h2>Normalized event stream</h2>
+            <p className="muted tiny">Status flips &lt;2m are merged into neighbors to scrub noise. Hover the timeline above for quick context.</p>
+            ${loading ? html`<div className="loading"><span className="pulse"></span>Loading...</div>` : html`
+              <${EventList} segments=${clipped.length ? clipped : normalized.segments} tz=${tz} limit=${14} />
+            `}
+          </div>
+
+          ${devMode ? html`
+            <div className="panel" style=${{ marginTop: "12px" }}>
+              <h2>Raw presence events (latest 200)</h2>
+              <p className="muted tiny">Direct output from /users/${selected}/presence without smoothing.</p>
+              <div className="event-list">
+                <div className="event-row muted tiny" style=${{ textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <span>Timestamp (UTC)</span><span>Raw</span><span>Normalized</span><span></span>
+                </div>
+                ${[...presence].slice(-200).reverse().map((ev, idx) => html`
+                  <div key=${idx} className="event-row">
+                    <div>${ev.timestamp}</div>
+                    <div>${ev.rawStatus}</div>
+                    <div>${ev.normalizedStatus}</div>
+                    <div></div>
+                  </div>
+                `)}
+              </div>
+            </div>
+          ` : null}
+        </div>
+      `;
+    };
+
+    const root = createRoot(document.getElementById("root"));
+    root.render(html`<${App} />`);
+  </script>
+</body>
+</html>

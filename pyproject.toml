@@ -1,0 +1,21 @@
+[project]
+name = "unhinged-spyware"
+version = "0.1.0"
+description = "Telegram presence-based sleep inference"
+authors = [
+    {name = "WaromiV",email = "admin@ascender.space"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "pyrogram (>=2.0.106,<3.0.0)",
+    "fastapi (>=0.124.4,<0.125.0)",
+    "uvicorn[standard] (>=0.38.0,<0.39.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
