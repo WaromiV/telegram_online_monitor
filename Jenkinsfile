@@ -2,7 +2,6 @@ pipeline {
     agent any
     options {
         timestamps()
-        ansiColor('xterm')
     }
     environment {
         COMPOSE_FILE = 'docker-compose.yml'
@@ -17,7 +16,9 @@ pipeline {
         stage('Prepare Env File') {
             steps {
                 withCredentials([file(credentialsId: 'tg-env-file', variable: 'TG_ENV_FILE')]) {
-                    sh 'cp "$TG_ENV_FILE" .env'
+                    ansiColor('xterm') {
+                        sh 'cp "$TG_ENV_FILE" .env'
+                    }
                 }
             }
         }
@@ -33,24 +34,30 @@ pipeline {
         }
         stage('Build & Deploy') {
             steps {
-                sh '''
-                    set -e
-                    COMPOSE_CMD=${COMPOSE_CMD:-"docker compose"}
-                    $COMPOSE_CMD -f ${COMPOSE_FILE} pull || true
-                    $COMPOSE_CMD -f ${COMPOSE_FILE} up -d --build --remove-orphans
-                '''
+                ansiColor('xterm') {
+                    sh '''
+                        set -e
+                        COMPOSE_CMD=${COMPOSE_CMD:-"docker compose"}
+                        $COMPOSE_CMD -f ${COMPOSE_FILE} pull || true
+                        $COMPOSE_CMD -f ${COMPOSE_FILE} up -d --build --remove-orphans
+                    '''
+                }
             }
         }
     }
     post {
         always {
-            sh 'rm -f .env'
+            ansiColor('xterm') {
+                sh 'rm -f .env'
+            }
         }
         failure {
-            sh '''
-                set +e
-                ${COMPOSE_CMD:-docker compose} -f ${COMPOSE_FILE:-docker-compose.yml} logs --tail 200
-            '''
+            ansiColor('xterm') {
+                sh '''
+                    set +e
+                    ${COMPOSE_CMD:-docker compose} -f ${COMPOSE_FILE:-docker-compose.yml} logs --tail 200
+                '''
+            }
         }
     }
 }
