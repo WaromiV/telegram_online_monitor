@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     env.COMPOSE_CMD = sh(
-                        script: 'command -v "docker compose" >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose"',
+                        script: 'command -v "docker compose" >/dev/null 2>&1 && echo "docker compose" || echo "docker compose"',
                         returnStdout: true
                     ).trim()
                 }
