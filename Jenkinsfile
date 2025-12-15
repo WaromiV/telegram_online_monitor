@@ -14,6 +14,13 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Prepare Env File') {
+            steps {
+                withCredentials([file(credentialsId: 'tg-env-file', variable: 'TG_ENV_FILE')]) {
+                    sh 'cp "$TG_ENV_FILE" .env'
+                }
+            }
+        }
         stage('Detect Compose CLI') {
             steps {
                 script {
@@ -36,6 +43,9 @@ pipeline {
         }
     }
     post {
+        always {
+            sh 'rm -f .env'
+        }
         failure {
             sh '''
                 set +e
