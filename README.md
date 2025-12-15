@@ -22,7 +22,7 @@ docker compose up --build -d
 Services:
 - `collector`: listens to Telegram status updates (no polling)
 - `aggregator`: runs `python -m unhinged_spyware.aggregator` every `AGGREGATE_INTERVAL_SECONDS` (default 600s)
-- `api`: serves FastAPI on `18080:18080`
+- `api`: serves FastAPI on `18080:8000` (external: 18080, internal app: 8000)
 
 To view logs:
 ```bash
