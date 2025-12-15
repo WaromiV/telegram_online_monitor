@@ -16,6 +16,6 @@ RUN pip install --no-cache-dir .
 ENV DATA_DIR=/app/data \
     DB_PATH=/app/data/presence.db
 
-EXPOSE 8000
+EXPOSE 18080
 
 CMD ["python", "-m", "unhinged_spyware.api"]

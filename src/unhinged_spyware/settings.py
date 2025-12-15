@@ -42,4 +42,4 @@ USER_TIMEZONES = _parse_user_timezones(os.environ.get("USER_TIMEZONES", ""))
 POLL_INTERVAL_SECONDS = int(os.environ.get("POLL_INTERVAL_SECONDS", "30"))
 
 FASTAPI_HOST = os.environ.get("FASTAPI_HOST", "0.0.0.0")
-FASTAPI_PORT = int(os.environ.get("FASTAPI_PORT", "8000"))
+FASTAPI_PORT = int(os.environ.get("FASTAPI_PORT", "18080"))
